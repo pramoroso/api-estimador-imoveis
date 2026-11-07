@@ -46,7 +46,7 @@ def test_quantidade():
 
 @pytest.mark.parametrize("params", [
     {"tipo": "terreno", **LOCAL},
-    {"tipo": "casa", **{**LOCAL, "estado": "XX"}},
+    {"tipo": "casa", **{**LOCAL, "bairro": "   "}},
     {"tipo": "casa", "estado": "SP", "cidade": "São Paulo"},
 ])
 def test_validacao(params):
@@ -80,3 +80,18 @@ def test_cors_sem_credenciais_com_curinga():
     r = client.get("/health", headers={"Origin": "http://exemplo.com"})
     assert r.headers["access-control-allow-origin"] == "*"
     assert "access-control-allow-credentials" not in r.headers
+
+
+def test_estado_nao_reconhecido_e_aceito():
+    """O frontend envia texto livre; a API não deve recusar estados digitados diferente."""
+    r = client.get("/buscar-imoveis/", params={**LOCAL, "tipo": "casa", "estado": "Sampa"})
+    assert r.status_code == 200
+    assert r.json()["resultados"][0]["estado"] == "Sampa"
+
+
+def test_chamada_identica_ao_frontend():
+    """Mesma URL montada pelo index.html do GitHub Pages."""
+    r = client.get("/buscar-imoveis/?tipo=casa&estado=sp&cidade=Campinas&bairro=Cambuí")
+    assert r.status_code == 200
+    for i in r.json()["resultados"]:
+        assert isinstance(i["valor"], int) and i["vagas"] >= 0

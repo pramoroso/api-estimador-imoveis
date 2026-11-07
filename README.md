@@ -4,7 +4,25 @@ API em FastAPI que gera imóveis comparáveis para uma localidade e estima o val
 
 > **Importante:** os dados são **simulados** (não são ofertas reais). A simulação é determinística: a mesma localidade sempre devolve os mesmos imóveis e o mesmo preço/m², e os valores são proporcionais à área, ao terreno e às vagas.
 
-## Como executar
+## Arquitetura
+
+```
+Frontend (GitHub Pages)                         API (Render)
+pramoroso.github.io/estimador-imovel  ──HTTP──▶  api-estimador-imoveis.onrender.com
+repo: pramoroso/estimador-imovel                 repo: este (main.py)
+```
+
+O GitHub Pages hospeda apenas arquivos estáticos; o Python roda no Render, que faz o deploy automático a partir do branch `main` deste repositório.
+
+### Deploy no Render
+
+- **Build command:** `pip install -r requirements.txt`
+- **Start command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
+- **Versão do Python:** definida no arquivo `.python-version`
+- **Health check path:** `/health`
+- No plano gratuito o serviço "dorme" após ~15 min sem uso; a primeira chamada pode levar até 1 minuto.
+
+## Como executar localmente
 
 ```bash
 pip install -r requirements.txt
@@ -26,7 +44,7 @@ Documentação interativa: http://localhost:8000/docs
 | Parâmetro | Obrigatório | Descrição |
 |---|---|---|
 | `tipo` | sim | `apartamento` ou `casa` |
-| `estado` | sim | UF (`SP`) ou nome (`São Paulo`) |
+| `estado` | sim | UF (`SP`) ou nome (`São Paulo`); texto não reconhecido é aceito como digitado |
 | `cidade` | sim | Nome da cidade |
 | `bairro` | sim | Nome do bairro |
 | `quantidade` | não | 1 a 50 (padrão 10) |
